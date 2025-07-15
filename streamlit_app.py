@@ -139,14 +139,14 @@ def main():
             st.subheader(f"Count Plot: {col}")
             counts = df[col].value_counts()
             fig, ax = plt.subplots()
-            sns.barplot(y=counts.index, x=counts.values, ax=ax, palette='viridis')
+            sns.barplot(y=counts.index, x=counts.values, ax=ax)
             ax.set_title(f"Counts of {col}")
             st.pyplot(fig)
 
             st.subheader(f"Percentage Plot: {col}")
             pct = df[col].value_counts(normalize=True) * 100
             fig, ax = plt.subplots()
-            sns.barplot(y=pct.index, x=pct.values, ax=ax, palette='magma')
+            sns.barplot(y=pct.index, x=pct.values, ax=ax)
             ax.set_title(f"Percentage of {col}")
             st.pyplot(fig)
 
@@ -155,7 +155,7 @@ def main():
         top10 = lsoa_counts.iloc[:10]
         top10['Other'] = lsoa_counts.iloc[10:].sum()
         fig, ax = plt.subplots()
-        sns.barplot(y=top10.index, x=top10.values, ax=ax, palette='cividis')
+        sns.barplot(y=top10.index, x=top10.values, ax=ax)
         ax.set_title("Top 10 LSOA Names")
         st.pyplot(fig)
 
@@ -191,7 +191,6 @@ def main():
             data=fut_df,
             y='predicted_crime_type',
             order=fut_df['predicted_crime_type'].value_counts().index,
-            palette='viridis',
             ax=ax
         )
         ax.set_title("Predicted Crimes Next 6 Months")
