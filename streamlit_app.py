@@ -95,12 +95,12 @@ def main():
         st.pyplot(fig)
 
         st.subheader("3. Interactive Crime Map (Humberside Area)")
-        # Filter to within ~0.5 degrees of Humberside center
+        # Filter to within ~1.0 degrees of Humberside center
         center_lat, center_lon = 53.5, -1.1
-        df_map = df[(df['latitude'].between(center_lat-0.5, center_lat+0.5)) &
-                    (df['longitude'].between(center_lon-0.5, center_lon+0.5))]
-        # Sample to max 80000 points for performance
-        df_sample = df_map.sample(n=min(len(df_map), 80000), random_state=42)
+        df_map = df[(df['latitude'].between(center_lat-1.0, center_lat+1.0)) &
+                    (df['longitude'].between(center_lon-1.0, center_lon+1.0))]
+        # Sample to max 100000 points for performance
+        df_sample = df_map.sample(n=min(len(df_map), 100000), random_state=42)
 
         m = folium.Map(location=[center_lat, center_lon], zoom_start=10)
         marker_cluster = MarkerCluster().add_to(m)
