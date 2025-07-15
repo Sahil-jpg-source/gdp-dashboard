@@ -84,6 +84,12 @@ def main():
         st.write(df.head())
 
         st.subheader("2. Correlation Heatmap")
+        st.markdown(
+            """
+             This heatmap is to showcase the correlations between the different variables of the data set like crime type, last outcome,
+              and map location of crime.
+            """
+        )
         corr_df = pd.concat([
             df[['latitude', 'longitude']],
             pd.get_dummies(df['crime_type'], prefix='crime'),
@@ -95,6 +101,12 @@ def main():
         st.pyplot(fig)
 
         st.subheader("3. Interactive Crime Map (Humberside Area)")
+        st.markdown(
+            """
+            This map showcases the location of crime near to 1.0 degrees of Humberside center. Come on interact with it and find out
+             all the trends related to Humberside crimes.
+            """
+        )
         # Filter to within ~1.0 degrees of Humberside center
         center_lat, center_lon = 53.5, -1.1
         df_map = df[(df['latitude'].between(center_lat-1.0, center_lat+1.0)) &
@@ -119,6 +131,13 @@ def main():
     # ===== Tab 2: EDA Analysis =====
     with tab2:
         st.header("📊 Exploratory Data Analysis")
+        st.markdown(
+            """
+           This part shows all the major plots for the crime data set. The major jurisdiction for which this data set belongs to 
+           including crime types, and last results of criminals. Both frequency and percentages are shown to highlight all major crime types in Humberside.
+           In addition you will also find major LSOA names.
+            """
+        )
         cat_cols = ['falls_within', 'crime_type', 'last_outcome_category']
         for col in cat_cols:
             st.subheader(f"Count Plot: {col}")
@@ -147,6 +166,12 @@ def main():
     # ===== Tab 3: Crime Prediction tab =====
     with tab3:
         st.header("🔮 Crime Prediction (Next 6 Months)")
+        st.markdown(
+            """
+            This is the last page folks for this dashboard on Humberside Crime data analysis. Hope you enjoyed it and found new patterns and trends.
+            In this part the crime prediction results are visualised based on the past data of Humberside Crime profile.
+            """
+        )
         rf, le_target, scaler, label_encoders, X_train, df_model = train_model(df)
 
         lon_min, lon_max = df_model['longitude'].min(), df_model['longitude'].max()
@@ -170,6 +195,12 @@ def main():
         fut_df = pd.concat(future_list, ignore_index=True)
 
         st.subheader("Predicted Crime Types")
+        st.markdown(
+            """
+            It shows you the crime types that are expected to continue on large in Humberside.
+             You can easily find the major crime types below.
+            """
+        )
         fig, ax = plt.subplots(figsize=(8, 6))
         sns.countplot(
             data=fut_df,
@@ -181,6 +212,12 @@ def main():
         st.pyplot(fig)
 
         st.subheader("Predictions by Month")
+        st.markdown(
+            """
+            This shows the crime profile prediction for the next half year in Humberside. Worry not police are out there guarding you
+             24/7.
+            """
+        )
         pivot = fut_df.groupby(['simulated_month', 'predicted_crime_type']).size().unstack(fill_value=0)
         fig, ax = plt.subplots(figsize=(10, 6))
         pivot.plot(kind='bar', stacked=True, ax=ax)
@@ -188,6 +225,11 @@ def main():
         st.pyplot(fig)
 
         st.subheader("Future vs Historical")
+        st.markdown(
+            """
+            This plot shows a clear comparison between the crime rates of future prediction and historical till now.
+            """
+        )
         num_hist = df_model.shape[0] / 36
         future_tot = fut_df.groupby('simulated_month').size().reset_index(name='future_count')
         future_tot['historical_avg'] = num_hist
