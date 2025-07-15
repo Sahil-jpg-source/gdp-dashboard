@@ -123,7 +123,6 @@ def main():
                 st.error("No HTML file found inside crime_map.zip.")
             else:
                 html_content = zf.read(html_files[0]).decode('utf-8')
-                html_content = folium.Map(location=[53.5, -1.1], zoom_start=7)
                 st.components.v1.html(html_content, height=600)
 
     # Tab 2: EDA Analysis
