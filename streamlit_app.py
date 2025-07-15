@@ -116,18 +116,7 @@ def main():
         st.pyplot(fig)
 
         st.subheader("3. Interactive Crime Map")
-        m = folium.Map(location=[53.5, -1.1], zoom_start=7)
-        cluster = MarkerCluster().add_to(m)
-        for _, row in df.iterrows():
-            folium.CircleMarker(
-                location=[row['latitude'], row['longitude']],
-                radius=3,
-                color='red',
-                fill=True,
-                fill_opacity=0.6
-            ).add_to(cluster)
-        m.save("crime_map.html")
-        html = open("crime_map.html").read()
+        html = open("data/crime_map.html").read()
         st.components.v1.html(html, height=600)
 
     # Tab 2: EDA Analysis
