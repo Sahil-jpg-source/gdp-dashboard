@@ -141,6 +141,13 @@ def main():
         cat_cols = ['falls_within', 'crime_type', 'last_outcome_category']
         for col in cat_cols:
             st.subheader(f"Count Plot: {col}")
+            st.markdown(
+            """
+              The following plots shows frequency and percentage of data inputs. It includes falls within variables, crime types, and, last outcome of criminal.
+              Falls within explains the jurisdiction under which all the crime falls under. Crime types explains the type of crime particular entry represents.
+              Finally the last outcome explains the punishment received by the criminal.
+            """
+                )
             counts = df[col].value_counts()
             fig, ax = plt.subplots()
             sns.barplot(y=counts.index, x=counts.values, ax=ax)
@@ -155,6 +162,14 @@ def main():
             st.pyplot(fig)
 
         st.subheader("Top 10 LSOA Names + 'Other'")
+        st.markdown(
+            """
+           It's a geographical unit used in England and Wales for statistical purposes. It is 
+           particularly for analysing and mapping crime data. LSOAs are smaller than wards 
+           and designed to be relatively consistent in population size. They are typically with around 1,500 residents or 650 households
+            """
+        )
+        
         lsoa_counts = df['lsoa_name'].value_counts()
         top10 = lsoa_counts.iloc[:10]
         top10['Other'] = lsoa_counts.iloc[10:].sum()
