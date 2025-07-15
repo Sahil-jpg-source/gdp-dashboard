@@ -75,9 +75,9 @@ def main():
         st.markdown(
             """
             This dashboard analyses the Humberside street crime dataset (May 2022 - Apr 2025), showing:
-            - Data Overview
-            - Correlation Heatmap
-            - Interactive Crime Map (focused on Humberside area)
+            1. Data Overview
+            2. Correlation Heatmap
+            3. Interactive Crime Map (focused on Humberside area)
             """
         )
         st.subheader("1. Data Overview")
@@ -86,8 +86,7 @@ def main():
         st.subheader("2. Correlation Heatmap")
         st.markdown(
             """
-             This heatmap is to showcase the correlations between the different variables of the data set like crime type, last outcome,
-              and map location of crime.
+             This heatmap is to showcase the correlations between the different variables of the data set like crime type, last outcome, and map location of crime.
             """
         )
         corr_df = pd.concat([
@@ -103,8 +102,7 @@ def main():
         st.subheader("3. Interactive Crime Map (Humberside Area)")
         st.markdown(
             """
-            This map showcases the location of crime near to 1.0 degrees of Humberside center. Come on interact with it and find out
-             all the trends related to Humberside crimes.
+            This map showcases the location of crime near to 1.0 degrees of Humberside center. Come on interact with it and find out all the trends related to Humberside crimes.
             """
         )
         # Filter to within ~1.0 degrees of Humberside center
@@ -133,9 +131,7 @@ def main():
         st.header("📊 Exploratory Data Analysis")
         st.markdown(
             """
-           This part shows all the major plots for the crime data set. The major jurisdiction for which this data set belongs to 
-           including crime types, and last results of criminals. Both frequency and percentages are shown to highlight all major crime types in Humberside.
-           In addition you will also find major LSOA names.
+           This part shows all the major plots for the crime data set. The major jurisdiction for which this data set belongs to including crime types, and last results of criminals. Both frequency and percentages are shown to highlight all major crime types in Humberside. In addition you will also find major LSOA names.
             """
         )
         cat_cols = ['falls_within', 'crime_type', 'last_outcome_category']
@@ -143,9 +139,7 @@ def main():
             st.subheader(f"Count Plot: {col}")
             st.markdown(
             """
-              The following plots shows frequency and percentage of data inputs. It includes falls within variables, crime types, and, last outcome of criminal.
-              Falls within explains the jurisdiction under which all the crime falls under. Crime types explains the type of crime particular entry represents.
-              Finally the last outcome explains the punishment received by the criminal.
+              The following plots shows frequency and percentage of data inputs. It includes falls within variables, crime types, and, last outcome of criminal. Falls within explains the jurisdiction under which all the crime falls under. Crime types explains the type of crime particular entry represents. Finally the last outcome explains the punishment received by the criminal.
             """
                 )
             counts = df[col].value_counts()
@@ -164,9 +158,7 @@ def main():
         st.subheader("Top 10 LSOA Names + 'Other'")
         st.markdown(
             """
-           It's a geographical unit used in England and Wales for statistical purposes. It is 
-           particularly for analysing and mapping crime data. LSOAs are smaller than wards 
-           and designed to be relatively consistent in population size. They are typically with around 1,500 residents or 650 households
+           It's a geographical unit used in England and Wales for statistical purposes. It is particularly for analysing and mapping crime data. LSOAs are smaller than wards and designed to be relatively consistent in population size. They are typically with around 1,500 residents or 650 households
             """
         )
         
@@ -183,8 +175,7 @@ def main():
         st.header("🔮 Crime Prediction (Next 6 Months)")
         st.markdown(
             """
-            This is the last page folks for this dashboard on Humberside Crime data analysis. Hope you enjoyed it and found new patterns and trends.
-            In this part the crime prediction results are visualised based on the past data of Humberside Crime profile.
+            This is the last page folks for this dashboard on Humberside Crime data analysis. Hope you enjoyed it and found new patterns and trends. In this part the crime prediction results are visualised based on the past data of Humberside Crime profile.
             """
         )
         rf, le_target, scaler, label_encoders, X_train, df_model = train_model(df)
@@ -212,8 +203,7 @@ def main():
         st.subheader("Predicted Crime Types")
         st.markdown(
             """
-            It shows you the crime types that are expected to continue on large in Humberside.
-             You can easily find the major crime types below.
+            It shows you the crime types that are expected to continue on large in Humberside. You can easily find the major crime types below.
             """
         )
         fig, ax = plt.subplots(figsize=(8, 6))
@@ -229,8 +219,7 @@ def main():
         st.subheader("Predictions by Month")
         st.markdown(
             """
-            This shows the crime profile prediction for the next half year in Humberside. Worry not police are out there guarding you
-             24/7.
+            This shows the crime profile prediction for the next half year in Humberside. Worry not police are out there guarding you 24/7.
             """
         )
         pivot = fut_df.groupby(['simulated_month', 'predicted_crime_type']).size().unstack(fill_value=0)
