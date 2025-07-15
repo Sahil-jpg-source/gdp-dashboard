@@ -37,7 +37,7 @@ def load_data():
         if os.path.exists('humberside-street-merged.csv'):
             df = pd.read_csv('humberside-street-merged.csv')
         # Else try ZIP in repository
-        elif os.path.exists('humberside-street-merged.zip'):
+        elif os.path.exists('data/humberside-street-merged.zip'):
             with zipfile.ZipFile('humberside-street-merged.zip') as zf:
                 csvs = [f for f in zf.namelist() if f.lower().endswith('.csv')]
                 if not csvs:
