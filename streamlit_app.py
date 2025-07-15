@@ -51,7 +51,6 @@ def load_data():
 
     # Clean and preprocess
     df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')
-    df['month'] = pd.to_datetime(df['month'], format='%Y-%m', errors='coerce')
     df['longitude'] = pd.to_numeric(df['longitude'], errors='coerce')
     df['latitude'] = pd.to_numeric(df['latitude'], errors='coerce')
     df['location'] = df['location'].astype(str).str.strip()
