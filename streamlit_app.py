@@ -14,53 +14,32 @@ import os
 # Set wide layout
 st.set_page_config(layout="wide")
 
-# Load Data Function
+# Loading Data Function (It auto-load from data folder)
 def load_data():
-    uploaded_file = st.file_uploader(
-        "Upload merged data file (CSV or ZIP containing CSV)", type=['csv','zip']
-    )
-    if uploaded_file:
-        if uploaded_file.name.lower().endswith('.zip'):
-            # Handle ZIP containing CSV
-            with zipfile.ZipFile(uploaded_file) as zf:
-                csvs = [f for f in zf.namelist() if f.lower().endswith('.csv')]
-                if not csvs:
-                    st.error("No CSV file found inside the ZIP archive.")
-                    st.stop()
-                with zf.open(csvs[0]) as f:
-                    df = pd.read_csv(f)
-        else:
-            # Direct CSV upload
-            df = pd.read_csv(uploaded_file)
+    # Attempting to load local ZIP containing the CSV
+    zip_path = os.path.join('data', 'humberside-street-merged.zip')
+    if os.path.exists(zip_path):
+        with zipfile.ZipFile(zip_path, 'r') as zf:
+            csvs = [f for f in zf.namelist() if f.lower().endswith('.csv')]
+            if not csvs:
+                st.error("No CSV file found inside data/humberside-street-merged.zip.")
+                st.stop()
+            with zf.open(csvs[0]) as f:
+                df = pd.read_csv(f)
     else:
-        # Attempt to load local CSV first
-        if os.path.exists('humberside-street-merged.csv'):
-            df = pd.read_csv('humberside-street-merged.csv')
-        # Else try ZIP in repository
-        elif os.path.exists('data/humberside-street-merged.zip'):
-            with zipfile.ZipFile('data/humberside-street-merged.zip') as zf:
-                csvs = [f for f in zf.namelist() if f.lower().endswith('.csv')]
-                if not csvs:
-                    st.error("No CSV file found inside local ZIP archive.")
-                    st.stop()
-                with zf.open(csvs[0]) as f:
-                    df = pd.read_csv(f)
-        else:
-            st.error("No data file found. Please upload a CSV or ZIP containing your data.")
-            st.stop()
+        st.error("Data archive not found in data/. Please add humberside-street-merged.zip.")
+        st.stop()
 
-    # Clean and preprocess
+    # Cleaning and preprocessing
     df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')
     df['longitude'] = pd.to_numeric(df['longitude'], errors='coerce')
     df['latitude'] = pd.to_numeric(df['latitude'], errors='coerce')
     df['location'] = df['location'].astype(str).str.strip()
-    df = df[df['location'] != '']
-    df = df.dropna(subset=['crime_id', 'crime_type'])
+    df = df.dropna(subset=['crime_id', 'crime_type', 'latitude', 'longitude'])
     df = df.drop_duplicates(subset=['crime_id']).reset_index(drop=True)
     return df
 
-# Prediction model preparation
-@st.cache_data
+# Prediction model preparation\@st.cache_data
 def train_model(df):
     df_model = df.dropna(subset=['lsoa_code', 'lsoa_name']).copy()
     rare = df_model['crime_type'].value_counts()[df_model['crime_type'].value_counts() < 1000].index
@@ -87,10 +66,10 @@ def train_model(df):
 def main():
     df = load_data()
 
-    # Create Tabs
+    # Creating my crime app Tabs
     tab1, tab2, tab3 = st.tabs(["General Overview", "EDA Analysis", "Crime Prediction"])
 
-    # Tab 1: General Overview
+    # ===== Tab 1: General Overview =====
     with tab1:
         st.header("🔎 Predictive Analytics Dashboard for Humberside Street")
         st.markdown(
@@ -98,7 +77,7 @@ def main():
             This dashboard analyses the Humberside street crime dataset (May 2022 - Apr 2025), showing:
             - Data Overview
             - Correlation Heatmap
-            - Interactive Crime Map
+            - Interactive Crime Map (focused on Humberside area)
             """
         )
         st.subheader("1. Data Overview")
@@ -111,21 +90,33 @@ def main():
             pd.get_dummies(df['last_outcome_category'], prefix='outcome')
         ], axis=1)
         fig, ax = plt.subplots(figsize=(10, 8))
-        sns.heatmap(corr_df.corr(), cmap='coolwarm', center=0, cbar_kws={'shrink': .5}, ax=ax)
+        sns.heatmap(corr_df.corr(), center=0, cbar_kws={'shrink': .5}, ax=ax)
         ax.set_title("Correlation Matrix")
         st.pyplot(fig)
 
-        st.subheader("3. Interactive Crime Map")
-        zip_path = 'data/crime_map.zip'
-        with zipfile.ZipFile(zip_path, 'r') as zf:
-            html_files = [f for f in zf.namelist() if f.endswith('.html')]
-            if not html_files:
-                st.error("No HTML file found inside crime_map.zip.")
-            else:
-                html_content = zf.read(html_files[0]).decode('utf-8')
-                st.components.v1.html(html_content, height=600)
+        st.subheader("3. Interactive Crime Map (Humberside Area)")
+        # Filter to within ~1.5 degrees of Humberside center
+        center_lat, center_lon = 53.5, -1.1
+        df_map = df[(df['latitude'].between(center_lat-1.5, center_lat+1.5)) &
+                    (df['longitude'].between(center_lon-1.5, center_lon+1.5))]
+        # Sample to max 100000 points for performance
+        df_sample = df_map.sample(n=min(len(df_map), 100000), random_state=42)
 
-    # Tab 2: EDA Analysis
+        m = folium.Map(location=[center_lat, center_lon], zoom_start=10)
+        marker_cluster = MarkerCluster().add_to(m)
+        for _, row in df_sample.iterrows():
+            folium.CircleMarker(
+                location=[row['latitude'], row['longitude']],
+                radius=3,
+                color='red',
+                fill=True,
+                fill_opacity=0.6
+            ).add_to(marker_cluster)
+        # Rendering the map directly
+        map_html = m._repr_html_()
+        st.components.v1.html(map_html, height=600)
+
+    # ===== Tab 2: EDA Analysis =====
     with tab2:
         st.header("📊 Exploratory Data Analysis")
         cat_cols = ['reported_by', 'falls_within', 'crime_type', 'last_outcome_category']
@@ -153,12 +144,11 @@ def main():
         ax.set_title("Top 10 LSOA Names")
         st.pyplot(fig)
 
-    # Tab 3: Crime Prediction
+    # ===== Tab 3: Crime Prediction tab =====
     with tab3:
         st.header("🔮 Crime Prediction (Next 6 Months)")
         rf, le_target, scaler, label_encoders, X_train, df_model = train_model(df)
 
-        # Simulate future data
         lon_min, lon_max = df_model['longitude'].min(), df_model['longitude'].max()
         lat_min, lat_max = df_model['latitude'].min(), df_model['latitude'].max()
         future_list = []
@@ -168,9 +158,9 @@ def main():
             df_f = pd.DataFrame({
                 'longitude': random_lons,
                 'latitude': random_lats,
-                'reported_by': label_encoders['reported_by'].transform([df_model['reported_by'].mode()[0]][0:1] * 5000),
-                'falls_within': label_encoders['falls_within'].transform([df_model['falls_within'].mode()[0]][0:1] * 5000),
-                'last_outcome_category': label_encoders['last_outcome_category'].transform([df_model['last_outcome_category'].mode()[0]][0:1] * 5000),
+                'reported_by': label_encoders['reported_by'].transform([df_model['reported_by'].mode()[0]]*5000),
+                'falls_within': label_encoders['falls_within'].transform([df_model['falls_within'].mode()[0]]*5000),
+                'last_outcome_category': label_encoders['last_outcome_category'].transform([df_model['last_outcome_category'].mode()[0]]*5000),
                 'simulated_month': m
             })
             df_f[['longitude', 'latitude']] = scaler.transform(df_f[['longitude', 'latitude']])
@@ -210,10 +200,10 @@ def main():
         ax.legend()
         st.pyplot(fig)
 
-    # Download cleaned data
-    st.sidebar.header("Download Data")
+    # Download cleaned data in sidebar
+    st.sidebar.header("Download Cleaned Data CSV")
     csv_data = df_model.to_csv(index=False).encode()
-    st.sidebar.download_button("Download Cleaned Data CSV", data=csv_data, file_name='cleaned_data.csv')
+    st.sidebar.download_button(label="Download CSV", data=csv_data, file_name='cleaned_data.csv')
 
 if __name__ == '__main__':
     main()
