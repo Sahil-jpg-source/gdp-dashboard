@@ -115,9 +115,16 @@ def main():
         ax.set_title("Correlation Matrix")
         st.pyplot(fig)
 
-        st.subheader("3. Interactive Crime Map")
-        html = open("data/crime_map.html").read()
-        st.components.v1.html(html, height=600)
+
+        zip_path = 'data/crime_map.zip'
+
+        with zipfile.ZipFile(zip_path, 'r') as zf:
+            html_files = [f for f in zf.namelist() if f.endswith('.html')]
+            if not html_files:
+                st.error("No HTML file found inside crime_map.zip.")
+            else:
+                html_content = zf.read(html_files[0]).decode('utf-8')
+                st.components.v1.html(html_content, height=600)
 
     # Tab 2: EDA Analysis
     with tab2:
